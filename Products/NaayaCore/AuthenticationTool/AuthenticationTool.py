@@ -1,46 +1,24 @@
-# The contents of this file are subject to the Mozilla Public
-# License Version 1.1 (the "License"); you may not use this file
-# except in compliance with the License. You may obtain a copy of
-# the License at http://www.mozilla.org/MPL/
-#
-# Software distributed under the License is distributed on an "AS
-# IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
-# implied. See the License for the specific language governing
-# rights and limitations under the License.
-#
-# The Original Code is Naaya version 1.0
-#
-# The Initial Owner of the Original Code is European Environment
-# Agency (EEA).  Portions created by Finsiel Romania are
-# Copyright (C) European Environment Agency.  All
-# Rights Reserved.
-#
-# Authors:
-#
-# Cornel Nitu, Finsiel Romania
-# Dragos Chirila, Finsiel Romania
-
-#python imports
 import re
 import time
 import string
 from copy import copy, deepcopy
 from StringIO import StringIO
 import csv
+import simplejson as json
 
-#zope imports
 from OFS.PropertyManager import PropertyManager
 from OFS.ObjectManager import ObjectManager
 from AccessControl import ClassSecurityInfo
 from AccessControl.User import BasicUserFolder
-from AccessControl.User import SpecialUser
-from AccessControl.Permissions import view_management_screens, view, manage_users
+from AccessControl.User import SpecialUser, SimpleUser
+from AccessControl.Permissions import view_management_screens, view,\
+                                    manage_users
 from Globals import InitializeClass, PersistentMapping
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
 from DateTime import DateTime
 from zope.event import notify
 
-#product imports
+from naaya.core.utils import is_ajax, render_macro
 from Products.NaayaCore.constants import *
 from Products.NaayaCore.managers.utils import \
      string2object, object2string, InvalidStringError, file_utils, utils
@@ -49,8 +27,9 @@ from plugins_tool import plugins_tool
 from User import User
 from Role import Role
 from Products.NaayaBase.constants import PERMISSION_PUBLISH_OBJECTS
-from Products.NaayaBase.events import NyAddUserRoleEvent, NySetUserRoleEvent, NyDelUserRoleEvent
-
+from Products.NaayaBase.events import NyAddUserRoleEvent, NySetUserRoleEvent,\
+                                        NyDelUserRoleEvent
+from Products.NaayaCore.managers.paginator import ObjectPaginator
 
 def manage_addAuthenticationTool(self, REQUEST=None):
     """ """
@@ -385,6 +364,83 @@ class AuthenticationTool(BasicUserFolder, Role, ObjectManager, session_manager,
                         users_roles[str(roles_tuple[0])] = []
                     users_roles[str(roles_tuple[0])].append((local_roles, folder.absolute_url(1)))
         return users_roles
+
+    security.declarePublic('search_users')
+    def search_users(self, query, REQUEST=None, **kw):
+        """ Search users based of query and other criteria, returning user
+        like objects or rendered html for an ajax request.
+
+        """
+        if REQUEST is not None:
+            form_data = dict(REQUEST.form)
+        else:
+            form_data = kw
+
+        skey= form_data.get('skey', 'name')
+        rkey = int(form_data.get('rkey', 0))
+        per_page = int(form_data.get('per_page', 50))
+        all_users = bool(form_data.get('all_users', False))
+        query = query.strip()
+
+        class DummyUser(SimpleUser):
+            """ Wrapper for User Sources. This object will go away I promise"""
+            mapping = {
+                'getUserCreatedDate': 'none',
+                'getUserFirstName': 'firstname',
+                'getUserLastName': 'lastname',
+                'getUserEmail': 'email',
+            }
+            none = None
+            map = None
+            created = None
+
+            def __init__(self, **kw):
+                for key, val in kw.items():
+                    setattr(self, key, val)
+            def __getattr__(self, name):
+                """ This """
+                if name in self.mapping.keys():
+                    return getattr(self, self.map[name])
+                else:
+                    return getattr(super(DummyUser, self), name)
+
+        def _filter(user):
+            """ Callback used to filter users """
+            return (user.name.lower().find(self.utToUtf8(query).lower()) !=-1 or
+                    user.email.lower().find(self.utToUtf8(query).lower()) !=-1 or
+                    user.firstname.lower().find(self.utToUtf8(query).lower()) !=-1 or
+                    user.lastname.lower().find(self.utToUtf8(query).lower()) !=-1)
+
+        user_objects = self.getUsers()
+        if all_users:
+            dummy_users = []
+            for user_source in self.getSources():
+                user_folder = user_source.getUserFolder()
+                users_roles = user_source.getUsersRoles(user_folder)
+                for name, role in users_roles.items():
+                    full_name = user_source.getUserCanonicalName(name)
+                    dummy = DummyUser(name=name,
+                                      firstname=full_name.split(' ')[0],
+                                      lastname=u''.join(full_name.split(' ')[1:]),
+                                      email=user_source.getUserEmail(name, user_folder))
+                    dummy_users.append(dummy)
+            user_objects.extend(dummy_users)
+        users = filter(_filter, self.utSortObjsListByAttr(
+            user_objects, skey, rkey))
+
+        if REQUEST is not None and is_ajax(REQUEST):
+            template = form_data.get('template', '')
+            try:
+                return render_macro(self, template, 'datatable', skey=skey,
+                                rkey=rkey, users=users, all_users_objects=users,
+                                per_page=per_page, site_url=self.getSitePath(),
+                                user_tool=self.getAuthenticationTool(),
+                                request=REQUEST)
+            except:
+                self.getSite().log_current_error()
+                return ''
+        else:
+            return users
 
     security.declareProtected(manage_users, 'searchUsers')
     def searchUsers(self, query, limit=0):
@@ -949,7 +1005,9 @@ class AuthenticationTool(BasicUserFolder, Role, ObjectManager, session_manager,
 
         output = StringIO()
         csv_writer = csv.writer(output)
-        csv_writer.writerow(['Username', 'Name', 'Organisation', 'Postal address', 'Email address', 'LDAP Group(s)', 'Roles', 'Account type'])
+        csv_writer.writerow(['Username', 'Name', 'Organisation',
+                             'Postal address', 'Email address',
+                             'LDAP Group(s)', 'Roles', 'Account type'])
 
         # get local_roles_by_location[location][user] = list of {roles, date, user_granting_roles}
         local_roles_by_location = {}

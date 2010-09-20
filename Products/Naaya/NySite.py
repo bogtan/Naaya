@@ -3002,6 +3002,18 @@ class NySite(NyRoleManager, CookieCrumbler, LocalPropertyManager, Folder,
         """ """
         return self.getFormsTool().getContent({'here': self}, 'site_admin_users')
 
+    security.declareProtected(PERMISSION_PUBLISH_OBJECTS, 'admin_local_users_html')
+    def admin_local_users_html(self, REQUEST=None, RESPONSE=None):
+        """ """
+        return self.getFormsTool().getContent({'here': self},
+            'site_admin_local_users')
+
+    security.declareProtected(PERMISSION_PUBLISH_OBJECTS, 'admin_local_all_html')
+    def admin_all_users_html(self, REQUEST=None, RESPONSE=None):
+        """ """
+        return self.getFormsTool().getContent({'here': self},
+            'site_admin_all_users')
+
     security.declareProtected(PERMISSION_PUBLISH_OBJECTS, 'admin_adduser_html')
     def admin_adduser_html(self, REQUEST=None, RESPONSE=None):
         """ """

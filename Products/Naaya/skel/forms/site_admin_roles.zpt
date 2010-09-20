@@ -1,29 +1,7 @@
-<tal:block metal:use-macro="python:here.getFormsTool().getForm('site_admin_template').macros['page']">
-
-<h1 metal:fill-slot="title" i18n:translate="">Users' management</h1>
-
-<tal:block metal:fill-slot="section"
-	tal:define="site_url here/getSitePath;
-				user_tool here/getAuthenticationTool">
-
-<div class="floated-buttons">
-	<span class="buttons">
-		<a style="float: right" tal:condition="user_tool/showBulkDownloadButton"
-				tal:attributes="href string:${user_tool/absolute_url}/downloadUsersCsv">
-			<span i18n:translate="">Bulk download</span>
-		</a>
-	</span>
-</div>
-
-<div id="tabbedmenu">
-<ul>
-	<li id="currenttab"><a tal:attributes="href string:${site_url}/admin_users_html" i18n:translate="">Local users</a></li>
-	<li tal:repeat="item user_tool/getSources">
-		<a tal:attributes="href string:${site_url}/admin_sources_html?id=${item/id}" tal:content="item/title_or_id">source</a>
-	</li>
-</ul>
-</div>
-<div class="cleaner"> </div>
+<metal:block use-macro="python:here.getFormsTool().getForm('site_admin_users').macros['page']">
+<metal:block fill-slot="search-box"></metal:block>
+<metal:block fill-slot="content"><metal:block define-macro="content">
+<div class="cleaner"></div>
 
 <script type="text/javascript">
 <!--
@@ -146,6 +124,27 @@ function createKey(key)
 <br />
 </fieldset>
 </form>
-
+<h1 i18n:translate="">Roles</h1>
+<p i18n:translate="">Click on a role to edit its permissions:</p>
+<input type="button" value="Add role" onclick="document.location.href='admin_addrole_html';"  i18n:attributes="value" />
+<table class="datatable">
+<thead>
+    <th i18n:translate="">Role name</th>
+    <th></th>
+</thead>
+<tbody>
+<tal:block repeat="role here/acl_users/list_all_roles">
+    <tr tal:condition="python:role not in ('Manager', 'Owner')">
+        <td tal:content="role" />
+        <td tal:define="baseurl string:${here/absolute_url}/admin_editrole_html;
+                        href string:${baseurl}?role=${role}">
+            <a tal:attributes="href href">
+                <img src="misc_/Naaya/edit" alt="Edit" />
+            </a>
+        </td>
+    </tr>
 </tal:block>
-</tal:block>
+</tbody>
+</table>
+</metal:block></metal:block>
+</metal:block>

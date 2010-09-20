@@ -13,12 +13,14 @@ $(document).ready(function(){
             minLenght: 0,
             source: function(request, response) {
                 toggleLoader();
-                data = {
-					query: request.term,
-                    template: template,
-                    skey: 'name',
-                    rkey: 1
-				};
+                var search_query = window.location.search;
+                if (search_query[0] == '?'){ //remove first ?
+                    search_query = search_query.substr(1);
+                }
+
+                data = unserialize(search_query); //utils.js
+                data['query']=request.term;
+                data['template'] = template;
                 if($('#all_users').length){
                     data['all_users'] = $('#all_users').val();
                 }
