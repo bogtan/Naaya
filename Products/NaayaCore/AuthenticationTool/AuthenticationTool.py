@@ -380,6 +380,7 @@ class AuthenticationTool(BasicUserFolder, Role, ObjectManager, session_manager,
         rkey = int(form_data.get('rkey', 0))
         per_page = int(form_data.get('per_page', 50))
         all_users = bool(form_data.get('all_users', False))
+        filter_role = form_data.get('role', '')
         query = query.strip()
 
         class DummyUser(SimpleUser):
@@ -397,12 +398,23 @@ class AuthenticationTool(BasicUserFolder, Role, ObjectManager, session_manager,
             def __init__(self, **kw):
                 for key, val in kw.items():
                     setattr(self, key, val)
+
             def __getattr__(self, name):
                 """ This """
                 if name in self.mapping.keys():
                     return getattr(self, self.map[name])
                 else:
                     return getattr(super(DummyUser, self), name)
+            def getRoles(self):
+                roles = []
+                for role in self.roles:
+                    if isinstance(role, (tuple, list)):
+                        for r  in role[0]:
+                            roles.append(r)
+                    else:
+                        roles.append(role)
+                return roles
+
 
         def _filter(user):
             """ Callback used to filter users """
@@ -422,11 +434,15 @@ class AuthenticationTool(BasicUserFolder, Role, ObjectManager, session_manager,
                     dummy = DummyUser(name=name,
                                       firstname=full_name.split(' ')[0],
                                       lastname=u''.join(full_name.split(' ')[1:]),
-                                      email=user_source.getUserEmail(name, user_folder))
+                                      email=user_source.getUserEmail(name, user_folder),
+                                      roles=role)
                     dummy_users.append(dummy)
             user_objects.extend(dummy_users)
         users = filter(_filter, self.utSortObjsListByAttr(
             user_objects, skey, rkey))
+
+        if filter_role != '':
+            users = filter(lambda u: filter_role in u.getRoles(), users)
 
         if REQUEST is not None and is_ajax(REQUEST):
             template = form_data.get('template', '')
@@ -434,7 +450,7 @@ class AuthenticationTool(BasicUserFolder, Role, ObjectManager, session_manager,
                 return render_macro(self, template, 'datatable', skey=skey,
                                 rkey=rkey, users=users, all_users_objects=users,
                                 per_page=per_page, site_url=self.getSitePath(),
-                                user_tool=self.getAuthenticationTool(),
+                                role=filter_role, user_tool=self.getAuthenticationTool(),
                                 request=REQUEST)
             except:
                 self.getSite().log_current_error()

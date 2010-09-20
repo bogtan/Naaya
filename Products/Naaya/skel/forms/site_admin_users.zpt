@@ -8,6 +8,7 @@
 				query python: request.get('query', '');
 				page python: int(request.get('page', 0));
 				per_page python: int(request.get('per_page', 50));
+				filter_role python: request.get('role', '');
 				user_sources python: here.getAuthenticationTool().getSources()">
 <metal:block define-slot="buttons"></metal:block>
 
