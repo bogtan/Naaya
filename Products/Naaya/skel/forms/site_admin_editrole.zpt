@@ -14,6 +14,57 @@
     sorted_zope_perm python:options['permission_names'].keys();
     dummy python:sorted_zope_perm.sort();
     has_permission python:lambda zp: options['zope_perm_for_role'][zp];">
+<tal:block define="site_path python:here.getSitePath();
+		   source_url string:${site_path}/admin_roles_html;
+		   section python:request.get('section', 'roles');">
+   <div class="second_tab_set">
+      <ul>
+	 <li tal:define="url string:${source_url}?section=users">
+	    <tal:block tal:condition="python:section=='users'">
+		<a tal:attributes="href url" i18n:translate="" class="current_sub"
+		    >List users & roles</a>
+	    </tal:block>
+
+	    <tal:block tal:condition="python:section!='users'">
+		<a tal:attributes="href url" i18n:translate=""
+		    >List users & roles</a>
+	    </tal:block>
+	 </li>
+
+	 <li tal:define="url string:${source_url}?section=roles">
+	    <tal:block tal:condition="python:section=='roles'">
+		<a tal:attributes="href url" i18n:translate="" class="current_sub"
+		    >Edit/Add role</a>
+	    </tal:block>
+
+	    <tal:block tal:condition="python:section!='roles'">
+		<a tal:attributes="href url" i18n:translate=""
+		    >Edit/Add role</a>
+	    </tal:block>
+	 </li>
+
+	 <li tal:define="url string:${source_url}?section=assign_roles">
+	    <tal:block tal:condition="python:section=='assign_roles'">
+		<a tal:attributes="href url" i18n:translate="" class="current_sub"
+		    >Assign roles to existing users</a>
+	    </tal:block>
+
+	    <tal:block tal:condition="python:section!='assign_roles'">
+		<a tal:attributes="href url" i18n:translate=""
+		    >Assign roles to existing users</a>
+	    </tal:block>
+	 </li>
+
+	 <div class="clear">
+	    &nbsp;
+	 </div>
+      </ul>
+   </div>
+
+   <div class="clear">
+      &nbsp;
+   </div>
+</tal:block>
 <form method="post" name="editRole"
     tal:attributes="action string:${here/absolute_url}/admin_editrole">
     <input type="hidden" name="role" tal:attributes="value role" />

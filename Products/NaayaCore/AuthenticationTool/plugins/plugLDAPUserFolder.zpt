@@ -108,6 +108,9 @@ function toggleSelect()
                 >Assign Roles to Groups</a>
         </tal:block>
         </li>
+        <li>
+            <div class="clear">&nbsp;</div>
+        </li>
     </ul>
     </div>
 

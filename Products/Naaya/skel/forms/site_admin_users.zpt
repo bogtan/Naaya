@@ -1,5 +1,5 @@
 <metal:block extend-macro="python:here.getFormsTool().getForm('site_admin_template').macros['page']" define-macro="page">
-<h1 metal:fill-slot="title" i18n:translate=""><metal:block define-slot="title">Users' management</metal:block></h1>
+<metal:block metal:fill-slot="title"><metal:block define-slot="title"><h1 i18n:translate="">Users' management</h1></metal:block></metal:block>
 <tal:block metal:fill-slot="section"
     tal:define="site_url here/getSitePath;
                 user_tool here/getAuthenticationTool;
@@ -18,10 +18,18 @@
 <div id="tabbedmenu" tal:define="toggle_all_users python:len(user_sources)>0">
     <ul>
         <li tal:condition='user_sources'
-			tal:attributes="id python: ('admin_all_users_html' in request.PATH_INFO or 'admin_users_html' in request.PATH_INFO) and 'currenttab' or ''">
+			tal:attributes="id python: ('admin_all_users_html' in request.PATH_INFO or
+						'admin_users_html' in request.PATH_INFO or
+						(request.get('from', '')  == 'all' and
+						'admin_edituser_html' in request.PATH_INFO)) and
+						'currenttab' or ''">
 			<a tal:attributes="href string:${site_url}/admin_all_users_html" i18n:translate="">All users</a>
 		</li>
-        <li tal:attributes="id python: ('admin_local_users_html' in request.PATH_INFO or 'admin_users_html' in request.PATH_INFO and not len(user_sources)) and 'currenttab' or ''">
+		<li tal:attributes="id python: ('admin_local_users_html' in request.PATH_INFO or
+						'admin_users_html' in request.PATH_INFO and not len(user_sources) or
+						('admin_edituser_html' in request.PATH_INFO and
+						request.get('from', '')  == 'local')) and
+						'currenttab' or ''">
 			<a tal:attributes="href string:${site_url}/admin_local_users_html" i18n:translate="">Local users</a>
 		</li>
         <li tal:repeat="item user_sources"
@@ -35,6 +43,7 @@
 </div>
 </metal:block></metal:block>
 <div class="cleaner"></div>
+<br />
 <metal:block define-slot="content">
 	<tal:block condition="user_sources"><metal:block use-macro="python: here.getFormsTool().getForm('site_admin_all_users').macros['content']"></metal:block></tal:block>
 	<tal:block condition="not: user_sources"><metal:block use-macro="python: here.getFormsTool().getForm('site_admin_local_users').macros['content']"></metal:block></tal:block>

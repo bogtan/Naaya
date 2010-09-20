@@ -67,7 +67,7 @@
             <input type="checkbox" name="names" tal:attributes="value python:user_tool.getUserAccount(user)" />
         </td>
         <td><strong><a tal:define="user_quoted python:here.utUrlEncode(user)"
-                        tal:attributes="href string:${site_url}/admin_edituser_html?name=${user_quoted}" tal:content="user">username</a></strong>
+                        tal:attributes="href string:${site_url}/admin_edituser_html?name=${user_quoted}&from=all" tal:content="user">username</a></strong>
             <span tal:condition="python:user_tool.isNewUser(user)">
                 <img src="misc_/Naaya/star.png" alt="New account" />
             </span>
