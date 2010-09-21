@@ -11,7 +11,8 @@ $(document).ready(function(){
         var self = $(this)
 
         self.autocomplete({
-            minLenght: 4,
+            minLength: 3,
+            delay: 500,
             source: function(request, response) {
                 toggleLoader();
                 var search_query = window.location.search;
@@ -34,7 +35,7 @@ $(document).ready(function(){
 
         self.keyup(function(keyCode){
             if($(this).val() == ''){
-                $(this).autocomplete("search", ' ');
+                $(this).autocomplete("search", '   ');
             }
         });
 
@@ -45,4 +46,10 @@ $(document).ready(function(){
 });
 function toggleLoader(){
     $('.ajax-loader').toggle();
+    if ($('#autocomplete-query').attr("disabled") === true){
+        $('#autocomplete-query').attr("disabled", "");
+        $('#autocomplete-query').focus();
+    }else{
+        $('#autocomplete-query').attr("disabled", "disabled");
+    }
 }

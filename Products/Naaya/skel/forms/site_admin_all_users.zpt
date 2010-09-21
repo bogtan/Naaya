@@ -88,5 +88,8 @@
 </metal:block>
 </div>
 </metal:block>
+<p>
+<strong>Note:</strong> The users marked with <img src="misc_/Naaya/star.png" alt="New account" /> are added in the last 5 days.
+</p>
 </metal:block></metal:block>
 </metal:block>

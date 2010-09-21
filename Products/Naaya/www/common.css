@@ -1397,3 +1397,24 @@ a.skiplink {
 	padding-right:0.3em;
 	text-decoration:none;
 }
+
+/**
+ * Added
+ *
+ * Bogdan Tanase 21 Sep 2010
+*/
+
+div#name_filter {
+	float: left;
+	margin-right: 3em;
+}
+
+div#role_filter {
+	float: left;
+	vertical-align: middle;
+}
+
+img.ajax-loader {
+	display: none;
+	vertical-align: middle;
+}

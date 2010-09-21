@@ -1,12 +1,12 @@
 <metal:block use-macro="python:here.getFormsTool().getForm('site_admin_users').macros['page']">
-
 <metal:block fill-slot="search-box"><metal:block define-macro="search-box">
 <div class="search-box">
     <form method="get" tal:attributes="href string:${user_tool/absolute_url}/search_users">
-        <span style="vertical-align: top;"><label for="search" i18n:translate="">Search user(s) containing</label></span>
-        <input type="text" size="25" name="query" id="query" class="autocomplete" tal:attributes="value python: request.get('query', '')" />
-        <input type="submit" i18n:attributes="value" value="Go" class="search_btn" />
-        <img class="ajax-loader" src='misc_/Naaya/ajax-loader.gif' style="display: none;"/>
+	<div id="name_filter">
+	    <span style="vertical-align: top;"><label for="search" i18n:translate="">Search user(s) containing</label></span>
+	    <input type="text" size="25" name="query" id="autocomplete-query" class="autocomplete" tal:attributes="value python: request.get('query', '')" />
+	</div>
+
         <div class="filters">
             <label for="filter-roles" i18n:translate="">Filter roles</label>
             <select name="role" id="filter-roles">
@@ -17,6 +17,7 @@
                 </tal:block>
             </select>
             <input type="submit" i18n:attributes="value" value="Go" />
+	    <img class="ajax-loader" src='misc_/Naaya/ajax-loader.gif' style="display: none;"/><br>
         </div>
     </form>
 </div>

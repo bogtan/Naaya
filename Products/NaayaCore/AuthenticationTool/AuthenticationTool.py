@@ -6,6 +6,7 @@ from StringIO import StringIO
 import csv
 import simplejson as json
 
+from DateTime import DateTime
 from OFS.PropertyManager import PropertyManager
 from OFS.ObjectManager import ObjectManager
 from AccessControl import ClassSecurityInfo
@@ -386,14 +387,12 @@ class AuthenticationTool(BasicUserFolder, Role, ObjectManager, session_manager,
         class DummyUser(SimpleUser):
             """ Wrapper for User Sources. This object will go away I promise"""
             mapping = {
-                'getUserCreatedDate': 'none',
                 'getUserFirstName': 'firstname',
                 'getUserLastName': 'lastname',
                 'getUserEmail': 'email',
             }
-            none = None
+            created = DateTime(1970, 1, 1)
             map = None
-            created = None
 
             def __init__(self, **kw):
                 for key, val in kw.items():
@@ -414,7 +413,8 @@ class AuthenticationTool(BasicUserFolder, Role, ObjectManager, session_manager,
                     else:
                         roles.append(role)
                 return roles
-
+            def getUserCreatedDate(self):
+                return self.created
 
         def _filter(user):
             """ Callback used to filter users """
